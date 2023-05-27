@@ -2,6 +2,7 @@ const TaskModel = require('../models/task_model.js');
 const sequelize = require('../utils/db_con.js');
 
 exports.postAddTask = async (req,res,next)=>{
+    if (!typeof req.body.name=== 'string'|| !typeof req.body.description=== 'string') return res.status(422).json('Incorrect Body')
     const name = req.body.name;
     const description = req.body.description;
     try{

@@ -5,7 +5,8 @@ const app = express();
 const sequelize = require('./utils/db_con.js');
 const taskRoutes = require('./routes/tasks.js')
 const setcors = require('./middlewares/setcors.js')
-app.use(setcors.setcors)
+
+app.use(setcors.setcors(['localhost',8000]));
 app.use(bodyParser.json({extended:false}))
 
 app.use('/tasks',taskRoutes)

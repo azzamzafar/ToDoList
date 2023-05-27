@@ -20,15 +20,16 @@ window.onload = async ()=>{
     const getTaskFuncs = [getRemaining,getDone]
     for await (const task of getTaskFuncs){
         const resp = await task();
-        if (!resp.message){
-            console.log(resp)
-            if (resp.length>0 && resp[0].status==1) await populateDoneList(resp)
-            else if (resp.length>0 && resp[0].status==0) await populateToDos(resp)
-        }else(alert(resp.message))
+        if (resp.message) alert(resp.message)
+        else if (resp.length>0){
+            if (resp[0].status==1) populateDoneList(resp)
+            else if (resp[0].status==0) populateToDos(resp)
+        }
     }
+
 }
 
-async function populateToDos(data){
+function populateToDos(data){
     for (let i=0;i<data.length;i++){
         const li = document.createElement('li');
         li.setAttribute('data-id',data[i].id)
@@ -40,7 +41,7 @@ async function populateToDos(data){
     }
 }
 
-async function populateDoneList(data) {
+function populateDoneList(data) {
     for (let i=0;i<data.length;i++){
         const li = document.createElement('li');
         li.setAttribute('data-id',data[i].id)

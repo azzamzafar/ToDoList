@@ -1,5 +1,5 @@
 import {createTask,editTask,getTask,changeStatus,removeTask} from './network_calls.js'
-
+import {populateToDos,populateDoneList} from './main.js'
 const taskform = document.getElementById('taskform');
 
 export async function processform(e){
@@ -14,12 +14,12 @@ export async function processform(e){
     if (method=="PUT"){
         const taskId = taskform.querySelector('input[name="_id"]').value;
         const resp = await editTask(taskId,formdata)
-        if (!resp.message)location.reload()
+        if (!resp.message) populateToDos()
         else alert(resp.message)
     }else{
         // POST Case
         const resp = await createTask(formdata)
-        if (!resp.message) location.reload()
+        if (!resp.message) populateToDos()
         else alert(resp.message)
     }
 }
@@ -47,7 +47,11 @@ export async function finishEvent(e){
     if (e.target.classList.contains('done')){
         const taskId = e.target.parentElement.getAttribute('data-id')
         const response = await changeStatus(taskId,{status:1});
-        if (!response.message)location.reload()
+        if (!response.message){
+            for await (const task of [populateToDos,populateDoneList]){
+                await task();
+            }
+        }
         else alert(response.message)
     }
 }
@@ -56,7 +60,11 @@ export async function undoEvent(e){
     if (e.target.classList.contains('undo')){
         const taskId = e.target.parentElement.getAttribute('data-id')
         const response = await changeStatus(taskId,{status:0});
-        if (! response.message)location.reload()
+        if (!response.message){
+            for await (const task of [populateToDos,populateDoneList]){
+                await task();
+            }
+        }
         else alert(response.message)
     }
 }
@@ -64,8 +72,16 @@ export async function undoEvent(e){
 export async function removeEvent(e){
     if (e.target.classList.contains('delete')){
         const expenseId = e.target.parentElement.getAttribute('data-id');
+        const listname = e.target.parentElement.parentElement.getAttribute('id');
+
         const response = await removeTask(expenseId);
-        if (!response.message)location.reload()
+        if (!response.message){
+            console.time()
+            if (listname=='todo-list') await populateToDos()
+            else if (listname=='done-list') await populateDoneList()
+            console.timeLog()
+        }
         else alert(response.message)
     }
+    console.timeEnd()
 }

@@ -17,39 +17,45 @@ donelist.addEventListener('click',undoEvent);
 // GET on load
 window.onload = async ()=>{
     taskform.reset();
-    const getTaskFuncs = [getRemaining,getDone]
-    for await (const task of getTaskFuncs){
-        const resp = await task();
-        if (resp.message) alert(resp.message)
-        else if (resp.length>0){
-            if (resp[0].status==1) populateDoneList(resp)
-            else if (resp[0].status==0) populateToDos(resp)
+    // const getTaskFuncs = [getRemaining,getDone]
+    for await (const task of [populateToDos,populateDoneList]){
+        await task()
+    }
+
+}
+
+export async function populateToDos(){
+    taskform.reset();
+    todolist.replaceChildren();
+    const data = await getRemaining();
+    if (data.message) alert (data.message)
+    else if (data.length>0){
+        for (let i=0;i<data.length;i++){
+            const li = document.createElement('li');
+            li.setAttribute('data-id',data[i].id)
+            li.innerHTML = `<b>Task</b>:${data[i].name}|<b>Description</b>:${data[i].description}`
+            li.appendChild(createDoneButton())
+            li.appendChild(createEditButton())
+            li.appendChild(createDeleteButton())
+            todolist.appendChild(li)
+        } 
+    }
+}
+
+export async function populateDoneList() {
+    donelist.replaceChildren();
+    const data = await getDone();
+    if (data.message) alert (data.message)
+    else if (data.length>0){
+        for (let i=0;i<data.length;i++){
+            const li = document.createElement('li');
+            li.setAttribute('data-id',data[i].id)
+            li.innerHTML = `<b>Task</b>:${data[i].name}|<b>Description</b>:${data[i].description}`
+            li.appendChild(createUndoButton())
+            li.appendChild(createDeleteButton())
+            donelist.appendChild(li)
         }
-    }
-
 }
-
-function populateToDos(data){
-    for (let i=0;i<data.length;i++){
-        const li = document.createElement('li');
-        li.setAttribute('data-id',data[i].id)
-        li.innerHTML = `<b>Task</b>:${data[i].name}|<b>Description</b>:${data[i].description}`
-        li.appendChild(createDoneButton())
-        li.appendChild(createEditButton())
-        li.appendChild(createDeleteButton())
-        todolist.appendChild(li)
-    }
-}
-
-function populateDoneList(data) {
-    for (let i=0;i<data.length;i++){
-        const li = document.createElement('li');
-        li.setAttribute('data-id',data[i].id)
-        li.innerHTML = `<b>Task</b>:${data[i].name}|<b>Description</b>:${data[i].description}`
-        li.appendChild(createUndoButton())
-        li.appendChild(createDeleteButton())
-        donelist.appendChild(li)
-    }
 }
 
 function createDoneButton(){
